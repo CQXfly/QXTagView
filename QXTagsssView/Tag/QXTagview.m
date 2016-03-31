@@ -41,6 +41,7 @@ static CGFloat const kQXFooterViewMargin = 20;
 
 @property (nonatomic,assign) CGFloat height_screen;
 
+@property (nonatomic,assign) NSUInteger cellNumbers;
 @end
 
 @implementation QXTagview
@@ -65,6 +66,15 @@ static CGFloat const kQXFooterViewMargin = 20;
 - (void) reloadData
 {
     
+    // 删除所有 （如何优化）
+    [self.cellFrames removeAllObjects];
+    [self.displayingCells removeAllObjects];
+    [self.reusableCells removeAllObjects];
+    
+    for (UIView * v in self.subviews) {
+        [v removeFromSuperview];
+    }
+    
     //数据源方法需要返还的数据
     self.width_screen = [UIScreen mainScreen].bounds.size.width;
     self.height_screen = [UIScreen mainScreen].bounds.size.height;
@@ -74,7 +84,8 @@ static CGFloat const kQXFooterViewMargin = 20;
     //cell的总数
     NSUInteger numberOfCells = [self.dataSource numberOfCellsInTagview:self];
     
-
+    self.cellNumbers = numberOfCells;
+    
     [self caculateWithNumberOfCells:numberOfCells WithHeaderView:headerview WithFooterView:footerView];
     
     if(headerview) {
@@ -221,6 +232,13 @@ static CGFloat const kQXFooterViewMargin = 20;
     NSUInteger numberofCells = self.cellFrames.count;
     
     for (int i = 0; i < numberofCells; i ++) {
+        
+        //防止数组越界
+        if (i >= self.cellNumbers) {
+            return;
+        }
+        
+        
          CGRect cellFrame = [self.cellFrames[i] CGRectValue];
         //take out cell from dictionary
         // the cell for the index. ps: yuor cell will be nil for the first time;
@@ -230,6 +248,9 @@ static CGFloat const kQXFooterViewMargin = 20;
         {
             if (!cell) { //cell不存在
                 //将这个位置的cell 添加到屏幕上
+                
+                
+              
                 cell = [self.dataSource tagview:self  cellAtIndex:i ];
                 cell.frame = cellFrame;
                 [self addSubview:cell];
